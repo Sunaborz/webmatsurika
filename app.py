@@ -153,6 +153,12 @@ def process_files(uploaded_excel, uploaded_customers, output_filename):
                 # 出力パス
                 output_path = temp_dir_path / output_filename
                 
+                # 統合ツールを一時ディレクトリにコピー
+                tool_source_path = Path("matsurica_integrated_tool.py")
+                tool_dest_path = temp_dir_path / "matsurica_integrated_tool.py"
+                if tool_source_path.exists():
+                    shutil.copy2(tool_source_path, tool_dest_path)
+                
                 # 統合ツールを実行
                 cmd = [
                     sys.executable, "matsurica_integrated_tool.py",
