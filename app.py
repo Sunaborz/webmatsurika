@@ -173,7 +173,8 @@ def process_files(uploaded_excel, uploaded_customers, output_filename):
                     cwd=temp_dir_path,
                     capture_output=True,
                     text=True,
-                    encoding='cp932'
+                    encoding='utf-8',
+                    errors='replace'
                 )
                 
                 if result.returncode == 0:
