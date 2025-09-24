@@ -16,7 +16,7 @@ from datetime import datetime
 
 # ページ設定
 st.set_page_config(
-    page_title="アプリ版魔界大帝マツリカ・マツリちゃんV2",
+    page_title="アプリ版魔界大帝マツリカ・マツリちゃんV3",
     page_icon="👑",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -57,7 +57,7 @@ st.markdown("""
 
 def main():
     # ヘッダー
-    st.markdown('<h1 class="main-header">👑 アプリ版魔界大帝マツリカ・マツリちゃん</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">👑 アプリ版魔界大帝マツリカ・マツリちゃん v3 </h1>', unsafe_allow_html=True)
     
     # サイドバー
     with st.sidebar:
@@ -229,3 +229,4 @@ def process_files(uploaded_excel, uploaded_customers, output_filename):
 
 if __name__ == "__main__":
     main()
+
