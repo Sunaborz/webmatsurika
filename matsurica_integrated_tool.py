@@ -669,29 +669,29 @@ def parse_dt_range(text: str, fallback_date):
     start_date = end_date = None
     start_time = end_time = None
 
+    # 活動日列から日付を優先的に取得（1970/1/1を回避）
+    if fallback_date is not None:
+        try:
+            fb = pd.to_datetime(fallback_date)
+            # 1970/1/1を明示的にチェック
+            if fb.strftime("%Y-%m-%d") != "1970-01-01":
+                start_date = fb.strftime("%Y-%m-%d")
+                end_date = start_date
+        except Exception:
+            pass
+
+    # 時間情報のみ活動内容から取得（日付情報は引用しない）
     if isinstance(text, str):
         t = clean_newlines(text)
-        m = DATE_TIME_RANGE.search(t)
+        # 時間パターンのみ検索（日付パターンはスキップ）
+        TIME_PAT1 = r"(?P<h1>\d{1,2})[:：時](?P<min1>\d{0,2})"
+        TIME_PAT2 = r"(?P<h2>\d{1,2})[:：時](?P<min2>\d{0,2})"
+        RANGE_SEP = r"[～~\-ー−—]"
+        
+        time_range_pattern = re.compile(rf"(?:{TIME_PAT1})?\s*{RANGE_SEP}\s*(?:{TIME_PAT2})")
+        m = time_range_pattern.search(t)
+        
         if m:
-            # 西暦年月日形式 (yyyy/mm/dd or yyyy-mm-dd)
-            if m.groupdict().get("y"):
-                y = int(m.group("y")); mo = int(m.group("m")); d = int(m.group("d"))
-                if is_valid_date(y, mo, d):
-                    start_date = datetime(y, mo, d).strftime("%Y-%m-%d")
-                    end_date   = start_date
-                else:
-                    print(f"警告: 無効な日付を検出: {y}/{mo}/{d}")
-            
-            # 和暦月日形式 (mm月dd日)
-            elif m.groupdict().get("mj"):
-                y = fallback_date.year if hasattr(fallback_date, "year") else datetime.now().year
-                mo = int(m.group("mj")); d = int(m.group("dj"))
-                if is_valid_date(y, mo, d):
-                    start_date = datetime(y, mo, d).strftime("%Y-%m-%d")
-                    end_date   = start_date
-                else:
-                    print(f"警告: 無効な日付を検出: {y}年{mo}月{d}日")
-
             sh, sm = m.group("h1"), m.group("min1")
             eh, em = m.group("h2"), m.group("min2")
             if sh:
@@ -701,14 +701,9 @@ def parse_dt_range(text: str, fallback_date):
                 em = em if em else "00"
                 end_time = f"{int(eh):02d}:{int(em):02d}"
 
-    # fallback
-    try:
-        fb = pd.to_datetime(fallback_date) if fallback_date is not None else None
-    except Exception:
-        fb = None
-
+    # デフォルト値の設定
     if not start_date:
-        start_date = (fb or datetime.now()).strftime("%Y-%m-%d")
+        start_date = datetime.now().strftime("%Y-%m-%d")
     if not end_date:
         end_date = start_date
     if not start_time:

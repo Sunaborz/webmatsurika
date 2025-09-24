@@ -1,0 +1,108 @@
+=== マツリカ変換処理開始 ===
+入力ファイル: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx
+顧客リスト: C:/Users/tomoh/Downloads/顧客リスト.csv
+出力フォルダ: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika
+出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+実行コマンド: C:\Users\tomoh\AppData\Local\Programs\Python\Python312\python.exe matsurica_integrated_tool.py C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx --customers C:/Users/tomoh/Downloads/顧客リスト.csv --output C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+カレントディレクトリ: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika
+サブプロセス実行中...
+サブプロセス出力: === マツリカ統合ツール処理開始 ===
+サブプロセス出力: 入力ファイル: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx
+サブプロセス出力: 顧客リスト: C:/Users/tomoh/Downloads/顧客リスト.csv
+サブプロセス出力: 出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: 1. ExcelファイルをCSVに変換中...
+サブプロセス出力: 強制変換開始: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx
+サブプロセス出力: 対象シート: 明細データ
+サブプロセス出力: 通常の方法失敗: Unable to read workbook: could not read stylesheet from C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx.
+サブプロセス出力: This is most probably because the workbook source files contain some invalid XML.
+サブプロセス出力: Please see the exception for more details.
+サブプロセス出力: 最初のシートも失敗: Unable to read workbook: could not read stylesheet from C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx.
+サブプロセス出力: This is most probably because the workbook source files contain some invalid XML.
+サブプロセス出力: Please see the exception for more details.
+サブプロセス出力: 共有文字列を抽出: 9968個
+サブプロセス出力: シート発見: マスターデータ -> sheet1.xml
+サブプロセス出力: シート発見: 明細データ -> sheet2.xml
+サブプロセス出力: シートファイルを抽出: xl/worksheets/sheet2.xml (明細データ)
+サブプロセス出力: 抽出したデータ: 2825行, サンプル: [['', '', '', '', '', '', '', '', '', '', '', ''], ['', '', '', '', '', '', '', '', '', '', '', '']]
+サブプロセス出力: 作成したDataFrame: (2824, 12)
+サブプロセス出力: 列の型: <class 'pandas.core.indexes.base.Index'>
+サブプロセス出力: 最初の数列: ['', '', '', '', '']
+サブプロセス出力: 強制変換完了: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx -> C:\Users\tomoh\Downloads\(層別活動用①)活動管理フォーム (2) 1.csv
+サブプロセス出力: 行数: 2824, 列数: 12
+サブプロセス出力: CSV変換完了: C:\Users\tomoh\Downloads\(層別活動用①)活動管理フォーム (2) 1.csv
+サブプロセス出力: 変換されたCSVファイル: C:\Users\tomoh\Downloads\(層別活動用①)活動管理フォーム (2) 1.csv
+サブプロセス出力: 2. 顧客リストとマッチング中...
+サブプロセス出力: 顧客リストファイルを読み込み中: C:\Users\tomoh\Downloads\顧客リスト.csv
+サブプロセス出力: 警告: 行 1 がヘッダーでないため削除対象とします
+サブプロセス出力: 完了: 行 2 をヘッダーとして設定します
+サブプロセス出力: 完了: 有効なデータ行数: 2822/2824
+サブプロセス出力: 完了: マッチング結果: 521/2822 行がマッチしました
+サブプロセス出力: 警告: 2301 行がマッチしなかったため削除します
+サブプロセス出力: マッチング結果をExcelファイルに保存中: matched_activity.xlsx
+サブプロセス出力: 完了: 企業マッチング完了: matched_activity.xlsx
+サブプロセス出力: マッチングされた行数: 521行
+サブプロセス出力: 3. マツリカ取込用CSV生成中...
+サブプロセス出力: マツリカCSV生成完了: 521行
+サブプロセス出力: 出力ファイルに保存中: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: 完了: マツリカCSV生成完了: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: === 処理が正常に完了しました ===
+サブプロセス出力: 最終出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: 出力ファイルサイズ: 170217 bytes
+サブプロセス終了コード: 0
+=== 処理が正常に完了しました ===
+出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+=== 処理終了 ===
+=== マツリカ変換処理開始 ===
+入力ファイル: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx
+顧客リスト: C:/Users/tomoh/Downloads/顧客リスト.csv
+出力フォルダ: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika
+出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+実行コマンド: C:\Users\tomoh\AppData\Local\Programs\Python\Python312\python.exe matsurica_integrated_tool.py C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx --customers C:/Users/tomoh/Downloads/顧客リスト.csv --output C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+カレントディレクトリ: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika
+サブプロセス実行中...
+サブプロセス出力: === マツリカ統合ツール処理開始 ===
+サブプロセス出力: 入力ファイル: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx
+サブプロセス出力: 顧客リスト: C:/Users/tomoh/Downloads/顧客リスト.csv
+サブプロセス出力: 出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: 1. ExcelファイルをCSVに変換中...
+サブプロセス出力: 強制変換開始: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx
+サブプロセス出力: 対象シート: 明細データ
+サブプロセス出力: 通常の方法失敗: Unable to read workbook: could not read stylesheet from C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx.
+サブプロセス出力: This is most probably because the workbook source files contain some invalid XML.
+サブプロセス出力: Please see the exception for more details.
+サブプロセス出力: 最初のシートも失敗: Unable to read workbook: could not read stylesheet from C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx.
+サブプロセス出力: This is most probably because the workbook source files contain some invalid XML.
+サブプロセス出力: Please see the exception for more details.
+サブプロセス出力: 共有文字列を抽出: 9968個
+サブプロセス出力: シート発見: マスターデータ -> sheet1.xml
+サブプロセス出力: シート発見: 明細データ -> sheet2.xml
+サブプロセス出力: シートファイルを抽出: xl/worksheets/sheet2.xml (明細データ)
+サブプロセス出力: 抽出したデータ: 2825行, サンプル: [['', '', '', '', '', '', '', '', '', '', '', ''], ['', '', '', '', '', '', '', '', '', '', '', '']]
+サブプロセス出力: 作成したDataFrame: (2824, 12)
+サブプロセス出力: 列の型: <class 'pandas.core.indexes.base.Index'>
+サブプロセス出力: 最初の数列: ['', '', '', '', '']
+サブプロセス出力: 強制変換完了: C:/Users/tomoh/Downloads/(層別活動用①)活動管理フォーム (2) 1.xlsx -> C:\Users\tomoh\Downloads\(層別活動用①)活動管理フォーム (2) 1.csv
+サブプロセス出力: 行数: 2824, 列数: 12
+サブプロセス出力: CSV変換完了: C:\Users\tomoh\Downloads\(層別活動用①)活動管理フォーム (2) 1.csv
+サブプロセス出力: 変換されたCSVファイル: C:\Users\tomoh\Downloads\(層別活動用①)活動管理フォーム (2) 1.csv
+サブプロセス出力: 2. 顧客リストとマッチング中...
+サブプロセス出力: 顧客リストファイルを読み込み中: C:\Users\tomoh\Downloads\顧客リスト.csv
+サブプロセス出力: 警告: 行 1 がヘッダーでないため削除対象とします
+サブプロセス出力: 完了: 行 2 をヘッダーとして設定します
+サブプロセス出力: 完了: 有効なデータ行数: 2822/2824
+サブプロセス出力: 完了: マッチング結果: 521/2822 行がマッチしました
+サブプロセス出力: 警告: 2301 行がマッチしなかったため削除します
+サブプロセス出力: マッチング結果をExcelファイルに保存中: matched_activity.xlsx
+サブプロセス出力: 完了: 企業マッチング完了: matched_activity.xlsx
+サブプロセス出力: マッチングされた行数: 521行
+サブプロセス出力: 3. マツリカ取込用CSV生成中...
+サブプロセス出力: マツリカCSV生成完了: 521行
+サブプロセス出力: 出力ファイルに保存中: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: 完了: マツリカCSV生成完了: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: === 処理が正常に完了しました ===
+サブプロセス出力: 最終出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+サブプロセス出力: 出力ファイルサイズ: 170217 bytes
+サブプロセス終了コード: 0
+=== 処理が正常に完了しました ===
+出力ファイル: C:\Users\tomoh\OneDrive - Konica Minolta\12.code\webmatsurika\customer_action_import_format.csv
+=== 処理終了 ===
