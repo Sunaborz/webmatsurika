@@ -16,7 +16,7 @@ from datetime import datetime
 
 # ページ設定
 st.set_page_config(
-    page_title="アプリ版魔界大帝マツリカ・マツリちゃん",
+    page_title="アプリ版魔界大帝マツリカ・マツリちゃんV2",
     page_icon="👑",
     layout="wide",
     initial_sidebar_state="expanded"
