@@ -275,6 +275,27 @@ def force_excel_to_csv(input_excel_path, output_csv_path=None, target_sheet_name
                 print(f"列の型: {type(df.columns)}")
                 print(f"最初の数列: {df.columns[:5].tolist() if hasattr(df.columns, 'tolist') else list(df.columns)[:5]}")
         
+        # 日付列（6列目）をExcelシリアル値から日付に変換
+        if len(df.columns) > 5:
+            date_col = df.columns[5]  # 6列目（0-indexedなので5） - 「活動日」列
+            print(f"日付列を変換中: {date_col}")
+            
+            # 日付列が空の場合でも、列インデックスで特定して変換を試みる
+            try:
+                # 列名が空でも、列インデックスでアクセスできる
+                date_series = df.iloc[:, 5]  # 6列目（0-indexedなので5） - 「活動日」列
+                print(f"日付列のデータ型: {date_series.dtype}")
+                print(f"変換前のサンプル: {date_series.head(5).values.tolist()}")
+                
+                # 日付列がExcelシリアル値かどうかをチェックして変換
+                df.iloc[:, 5] = date_series.apply(convert_excel_serial_to_date)
+                
+                # 変換結果を確認
+                sample_dates = df.iloc[:, 5].head(5).values.tolist()
+                print(f"日付変換サンプル: {sample_dates}")
+            except Exception as e:
+                print(f"日付変換エラー: {e}")
+        
         # 文字列データを安全に変換
         for col in df.columns:
             col_series = df[col]
@@ -665,33 +686,55 @@ def is_valid_date(year: int, month: int, day: int) -> bool:
     except ValueError:
         return False
 
+def convert_excel_serial_to_date(serial_value):
+    """Excelシリアル値を日付に変換"""
+    try:
+        # 文字列の場合は数値に変換を試みる
+        if isinstance(serial_value, str) and serial_value.strip():
+            try:
+                serial_value = float(serial_value)
+            except ValueError:
+                return serial_value  # 変換できない場合は元の値を返す
+        
+        if isinstance(serial_value, (int, float)) and 0 < serial_value < 100000:
+            # Excelシリアル値を日付に変換（1900年1月1日を基準）
+            base_date = datetime(1900, 1, 1)
+            # Excelのバグ補正（1900年を閏年と誤認しているため）
+            if serial_value >= 60:
+                serial_value -= 1
+            target_date = base_date + pd.Timedelta(days=serial_value - 1)
+            return target_date.strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    return serial_value
+
 def parse_dt_range(text: str, fallback_date):
     start_date = end_date = None
     start_time = end_time = None
 
-    # 活動日列から日付を優先的に取得（1970/1/1を回避）
-    if fallback_date is not None:
-        try:
-            fb = pd.to_datetime(fallback_date)
-            # 1970/1/1を明示的にチェック
-            if fb.strftime("%Y-%m-%d") != "1970-01-01":
-                start_date = fb.strftime("%Y-%m-%d")
-                end_date = start_date
-        except Exception:
-            pass
-
-    # 時間情報のみ活動内容から取得（日付情報は引用しない）
     if isinstance(text, str):
         t = clean_newlines(text)
-        # 時間パターンのみ検索（日付パターンはスキップ）
-        TIME_PAT1 = r"(?P<h1>\d{1,2})[:：時](?P<min1>\d{0,2})"
-        TIME_PAT2 = r"(?P<h2>\d{1,2})[:：時](?P<min2>\d{0,2})"
-        RANGE_SEP = r"[～~\-ー−—]"
-        
-        time_range_pattern = re.compile(rf"(?:{TIME_PAT1})?\s*{RANGE_SEP}\s*(?:{TIME_PAT2})")
-        m = time_range_pattern.search(t)
-        
+        m = DATE_TIME_RANGE.search(t)
         if m:
+            # 西暦年月日形式 (yyyy/mm/dd or yyyy-mm-dd)
+            if m.groupdict().get("y"):
+                y = int(m.group("y")); mo = int(m.group("m")); d = int(m.group("d"))
+                if is_valid_date(y, mo, d):
+                    start_date = datetime(y, mo, d).strftime("%Y-%m-%d")
+                    end_date   = start_date
+                else:
+                    print(f"警告: 無効な日付を検出: {y}/{mo}/{d}")
+            
+            # 和暦月日形式 (mm月dd日)
+            elif m.groupdict().get("mj"):
+                y = fallback_date.year if hasattr(fallback_date, "year") else datetime.now().year
+                mo = int(m.group("mj")); d = int(m.group("dj"))
+                if is_valid_date(y, mo, d):
+                    start_date = datetime(y, mo, d).strftime("%Y-%m-%d")
+                    end_date   = start_date
+                else:
+                    print(f"警告: 無効な日付を検出: {y}年{mo}月{d}日")
+
             sh, sm = m.group("h1"), m.group("min1")
             eh, em = m.group("h2"), m.group("min2")
             if sh:
@@ -701,9 +744,14 @@ def parse_dt_range(text: str, fallback_date):
                 em = em if em else "00"
                 end_time = f"{int(eh):02d}:{int(em):02d}"
 
-    # デフォルト値の設定
+    # fallback
+    try:
+        fb = pd.to_datetime(fallback_date) if fallback_date is not None else None
+    except Exception:
+        fb = None
+
     if not start_date:
-        start_date = datetime.now().strftime("%Y-%m-%d")
+        start_date = (fb or datetime.now()).strftime("%Y-%m-%d")
     if not end_date:
         end_date = start_date
     if not start_time:
