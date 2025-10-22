@@ -667,11 +667,14 @@ def decide_action_type(method_val: str, k_type: str, free_text: str) -> str:
     return val
 
 # 日付・時間抽出用正規表現
-DATE_PAT1 = r"(?P<y>\d{4})[/-](?P<m>\d{1,2})[/-](?P<d>\d{1,2})"
+DATE_PAT1 = (
+    r"(?P<y>\d{4})\s*(?:[/-]|年)\s*(?P<m>\d{1,2})"
+    r"\s*(?:[/-]|月)\s*(?P<d>\d{1,2})(?:日)?"
+)
 DATE_PAT2 = r"(?P<mj>\d{1,2})月(?P<dj>\d{1,2})日"
 TIME_PAT1  = r"(?P<h1>\d{1,2})[:：時](?P<min1>\d{0,2})"
 TIME_PAT2  = r"(?P<h2>\d{1,2})[:：時](?P<min2>\d{0,2})"
-RANGE_SEP = r"[～~\-ー−—]"
+RANGE_SEP = r"[～〜~\-ー−—]"
 
 DATE_TIME_RANGE = re.compile(
     rf"(?:{DATE_PAT1}|{DATE_PAT2}).*?(?:{TIME_PAT1})?\s*{RANGE_SEP}\s*(?:{TIME_PAT2})",
