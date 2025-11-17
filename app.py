@@ -15,9 +15,11 @@ import tempfile
 import shutil
 from datetime import datetime
 
+APP_VERSION = "V4"
+
 # ページ設定
 st.set_page_config(
-    page_title="アプリ版魔界大帝マツリカ・マツリちゃんV3",
+    page_title=f"アプリ版魔界大帝マツリカ・マツリちゃん{APP_VERSION}",
     page_icon="👑",
     layout="wide",
     initial_sidebar_state="expanded"
