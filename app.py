@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 最終更新: 2025-11-17 14:25 (Codexによる追記)
 """
 マツリカちゃん Streamlit Webアプリケーション
 Streamlit Community Cloud用のWebインターフェース
@@ -57,7 +58,7 @@ st.markdown("""
 
 def main():
     # ヘッダー
-    st.markdown('<h1 class="main-header">👑 アプリ版魔界大帝マツリカ・マツリちゃん v3 </h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">👑 アプリ版魔界大帝マツリカ・マツリちゃん　v3</h1>', unsafe_allow_html=True)
     
     # サイドバー
     with st.sidebar:
@@ -121,7 +122,7 @@ def main():
         
         ### 必要なファイル
         - **活動Excelファイル**: シート「明細データ」または先頭シートに活動データがあること
-        - **顧客リストCSV**: Shift-JISエンコーディング、B列に「取引先名(必須)」があること
+        - **顧客リストCSV**: Shift-JISエンコーディングで顧客名の列（例: 「取引先名(必須)」「取引先名」など）が含まれていること
         
         ### 出力ファイル
         - 中間ファイル: `matched_activity.xlsx`（企業マッチング結果）
@@ -229,4 +230,3 @@ def process_files(uploaded_excel, uploaded_customers, output_filename):
 
 if __name__ == "__main__":
     main()
-

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 最終更新: 2025-11-17 14:25 (Codexによる追記)
 """
 マツリカGUIツール
 グラフィカルユーザーインターフェースでマツリカ変換を簡単に実行
@@ -12,6 +13,12 @@ import sys
 from pathlib import Path
 import os
 import logging
+
+GUI_VERSION = "matsurica_gui.py v2025.10.22-02"
+try:
+    from matsurica_integrated_tool import TOOL_VERSION as INTEGRATED_TOOL_VERSION
+except Exception:
+    INTEGRATED_TOOL_VERSION = "不明（モジュール未読込）"
 
 class MatsuricaGUI:
     def __init__(self, root):
@@ -444,6 +451,8 @@ class MatsuricaGUI:
         """実際の変換処理を実行"""
         try:
             self.log_message("=== マツリカ変換処理開始 ===")
+            self.log_message(f"GUIバージョン: {GUI_VERSION}")
+            self.log_message(f"統合ツールバージョン: {INTEGRATED_TOOL_VERSION}")
             self.log_message(f"入力ファイル: {self.excel_file.get()}")
             self.log_message(f"顧客リスト: {self.customers_file.get()}")
             self.log_message(f"出力フォルダ: {self.output_folder.get()}")

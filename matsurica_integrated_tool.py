@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 最終更新: 2025-11-17 14:25 (Codexによる追記)
 """
 マツリカ統合ツール
 Excelファイルからマツリカ取込用CSVを生成する統合ツール
@@ -18,6 +19,41 @@ import xml.etree.ElementTree as ET
 import re
 import unicodedata
 from datetime import datetime
+
+TOOL_VERSION = "matsurica_integrated_tool.py v2025.10.22-02"
+
+CUSTOMER_NAME_ALIASES = [
+    "取引先名(必須)",
+    "取引先名",
+    "顧客名",
+    "会社名",
+    "企業名",
+]
+
+CUSTOMER_ID_ALIASES = [
+    "取引先ID(必須)",
+    "取引先ID",
+    "顧客ID",
+    "会社ID",
+    "顧客コード",
+    "取引先コード",
+]
+
+CUSTOMER_KUBUN_ALIASES = [
+    "顧客区分（管理番号:19103）",
+    "顧客区分（管理番号：19103）",
+    "顧客区分",
+    "顧客ランク",
+    "区分",
+]
+
+CUSTOMER_MA_SUPPORT_ALIASES = [
+    "MA部支援担当（管理番号:19258）",
+    "MA部支援担当（管理番号：19258）",
+    "MA部支援担当",
+    "支援担当者",
+    "担当者",
+]
 
 # ========== 共通ユーティリティ関数 ==========
 
@@ -58,6 +94,47 @@ def find_col(df: pd.DataFrame, names_or_idx, default=None):
     elif isinstance(names_or_idx, int):
         return cols[names_or_idx] if 0 <= names_or_idx < len(cols) else default
     return default
+
+def normalize_column_label(label: str) -> str:
+    """
+    列名を比較しやすいように正規化する
+    - 全角/半角を揃える
+    - 括弧内の注釈（例: (必須)）を除去
+    - スペースや区切り記号を除去
+    """
+    if label is None:
+        return ""
+    text = unicodedata.normalize("NFKC", str(label))
+    # Remove annotations such as (必須) / （必須）
+    text = re.sub(r"[（(][^）)]*[）)]", "", text)
+    # Remove obvious keywords that are only annotations
+    text = text.replace("必須", "")
+    # Remove separators/whitespace
+    text = re.sub(r"[\s　:_：・･／/、，,.-]", "", text)
+    return text.strip()
+
+def build_column_lookup(columns):
+    """
+    normalize_column_label をキーにした辞書を作成する
+    """
+    lookup = {}
+    for col in columns:
+        norm = normalize_column_label(col)
+        if norm and norm not in lookup:
+            lookup[norm] = col
+    return lookup
+
+def resolve_column(lookup_dict, aliases):
+    """
+    alias候補（文字列またはリスト）から最初に一致した列名を返す
+    """
+    if not isinstance(aliases, (list, tuple)):
+        aliases = [aliases]
+    for cand in aliases:
+        norm = normalize_column_label(cand)
+        if norm and norm in lookup_dict:
+            return lookup_dict[norm]
+    return None
 
 # ========== Excel→CSV変換機能 ==========
 
@@ -510,11 +587,18 @@ def match_customers(customers_path: Path, activity_path: Path) -> pd.DataFrame:
     """
     # 顧客リスト
     customers = pd.read_csv(customers_path, encoding="cp932")
-    cust_name_col = "取引先名(必須)" if "取引先名(必須)" in customers.columns else None
+    col_lookup = build_column_lookup(customers.columns)
+
+    cust_name_col = resolve_column(col_lookup, CUSTOMER_NAME_ALIASES)
     if cust_name_col is None:
-        raise RuntimeError("顧客リストに『取引先名(必須)』列が見つかりません。")
-    cust_id_col = "取引先ID(必須)" if "取引先ID(必須)" in customers.columns else None
-    kubun_col   = "顧客区分（管理番号:19103）" if "顧客区分（管理番号:19103）" in customers.columns else None
+        available = ", ".join(map(str, customers.columns))
+        raise RuntimeError(
+            "顧客リストに必要な顧客名の列が見つかりません。\n"
+            f"- 探索した候補: {', '.join(CUSTOMER_NAME_ALIASES)}\n"
+            f"- 現在のヘッダー: {available}"
+        )
+    cust_id_col = resolve_column(col_lookup, CUSTOMER_ID_ALIASES)
+    kubun_col   = resolve_column(col_lookup, CUSTOMER_KUBUN_ALIASES)
 
     # 活動ファイル（堅牢読込）
     activity, sheet = read_activity_robust(activity_path)
@@ -680,6 +764,9 @@ DATE_TIME_RANGE = re.compile(
     rf"(?:{DATE_PAT1}|{DATE_PAT2}).*?(?:{TIME_PAT1})?\s*{RANGE_SEP}\s*(?:{TIME_PAT2})",
     flags=re.IGNORECASE
 )
+DATE_ONLY_WEST = re.compile(DATE_PAT1, flags=re.IGNORECASE)
+DATE_ONLY_JP = re.compile(DATE_PAT2, flags=re.IGNORECASE)
+TIME_SINGLE = re.compile(r"(?P<h>\d{1,2})[:：時](?P<min>\d{0,2})")
 
 def is_valid_date(year: int, month: int, day: int) -> bool:
     """日付が有効かどうかをチェックする"""
@@ -746,6 +833,32 @@ def parse_dt_range(text: str, fallback_date):
             if eh:
                 em = em if em else "00"
                 end_time = f"{int(eh):02d}:{int(em):02d}"
+        else:
+            # タイムレンジとしては取得できなかった場合でも、日付単体・時間単体を拾う
+            date_match = DATE_ONLY_WEST.search(t)
+            if date_match:
+                y = int(date_match.group("y")); mo = int(date_match.group("m")); d = int(date_match.group("d"))
+                if is_valid_date(y, mo, d):
+                    start_date = datetime(y, mo, d).strftime("%Y-%m-%d")
+                    end_date = start_date
+                else:
+                    print(f"警告: 無効な日付を検出: {y}/{mo}/{d}")
+            else:
+                jp_match = DATE_ONLY_JP.search(t)
+                if jp_match:
+                    y = fallback_date.year if hasattr(fallback_date, "year") else datetime.now().year
+                    mo = int(jp_match.group("mj")); d = int(jp_match.group("dj"))
+                    if is_valid_date(y, mo, d):
+                        start_date = datetime(y, mo, d).strftime("%Y-%m-%d")
+                        end_date = start_date
+                    else:
+                        print(f"警告: 無効な日付を検出: {y}年{mo}月{d}日")
+
+            time_match = TIME_SINGLE.search(t)
+            if time_match:
+                mh = time_match.group("h")
+                mm = time_match.group("min") or "00"
+                start_time = f"{int(mh):02d}:{int(mm):02d}"
 
     # fallback
     try:
@@ -760,12 +873,17 @@ def parse_dt_range(text: str, fallback_date):
     if not start_time:
         start_time = "10:00"
     if not end_time:
-        end_time = "11:00"
+        # 単一時刻のみ取得できた場合は終了時間を開始時間に合わせる
+        end_time = start_time if start_time else "11:00"
 
     return start_date, start_time, end_date, end_time
 
-def build_output(activity_df: pd.DataFrame, customers_df: pd.DataFrame, template_cols: list[str]) -> pd.DataFrame:
+def build_output(activity_df: pd.DataFrame, customers_df: pd.DataFrame, template_cols: list[str], customer_lookup: dict[str, str] | None = None) -> pd.DataFrame:
     cols = activity_df.columns.tolist()
+    if customer_lookup is None:
+        customer_lookup = build_column_lookup(customers_df.columns)
+    cust_id_master_col = resolve_column(customer_lookup, CUSTOMER_ID_ALIASES)
+    ma_support_col     = resolve_column(customer_lookup, CUSTOMER_MA_SUPPORT_ALIASES)
 
     # よくある列名の候補
     col_customer_name = find_col(activity_df, ["マッチ顧客名", "活動先", 2], default=None)
@@ -778,9 +896,21 @@ def build_output(activity_df: pd.DataFrame, customers_df: pd.DataFrame, template
 
     # 出力用の最低限フィールドを抽出
     out_rows = []
+    customer_id_index: dict[str, int] = {}
+    if cust_id_master_col:
+        for idx, value in customers_df[cust_id_master_col].items():
+            if pd.isna(value):
+                continue
+            key = str(value).strip()
+            if key and key not in customer_id_index:
+                customer_id_index[key] = idx
+
     for i, row in activity_df.iterrows():
         cust_name = str(row.get(col_customer_name, "")) if col_customer_name else ""
-        cust_id   = row.get(col_customer_id, "")
+        cust_id_raw = row.get(col_customer_id, "")
+        cust_id_key = ""
+        if cust_id_raw is not None and not pd.isna(cust_id_raw):
+            cust_id_key = str(cust_id_raw).strip()
         kubun     = row.get(col_kubun, "")
         method_v  = row.get(col_method, "")
         ktype_v   = row.get(col_k_type, "")
@@ -798,7 +928,7 @@ def build_output(activity_df: pd.DataFrame, customers_df: pd.DataFrame, template
         # 代表的マッピング（出力見本の列名に合わせて可能な限り格納）
         for key in template_cols:
             if key == "取引先ID(必須)":
-                rec[key] = to_sjis_safe("" if pd.isna(cust_id) else str(cust_id))
+                rec[key] = to_sjis_safe(cust_id_key)
             elif key == "アクション種別(必須)":
                 rec[key] = to_sjis_safe(action_type)
             elif key == "開始日(必須)":
@@ -818,14 +948,11 @@ def build_output(activity_df: pd.DataFrame, customers_df: pd.DataFrame, template
                 elif key == "主担当者(必須)":
                     # 顧客リストからMA部支援担当を取得
                     ma_support = ""
-                    if not pd.isna(cust_id):
-                        customer_match = customers_df[customers_df["取引先ID(必須)"] == cust_id]
-                        if not customer_match.empty:
-                            ma_col = find_col(customers_df, ["MA部支援担当（管理番号:19258）"], default=None)
-                            if ma_col:
-                                ma_support = customer_match[ma_col].iloc[0]
-                                if pd.isna(ma_support):
-                                    ma_support = ""
+                    if cust_id_key and cust_id_key in customer_id_index and ma_support_col:
+                        match_idx = customer_id_index[cust_id_key]
+                        ma_support = customers_df.at[match_idx, ma_support_col]
+                        if pd.isna(ma_support):
+                            ma_support = ""
                     rec[key] = to_sjis_safe(ma_support if ma_support else "担当者未設定")
                 else:
                     rec[key] = ""  # 空文字を設定
@@ -841,6 +968,7 @@ def build_matsurica_csv(customers_path: Path, matched_activity_path: Path) -> pd
     """
     # 読み込み
     customers = pd.read_csv(customers_path, encoding="cp932")
+    customer_lookup = build_column_lookup(customers.columns)
     xl = pd.ExcelFile(matched_activity_path)
     sheet = "明細データ" if "明細データ" in xl.sheet_names else xl.sheet_names[0]
     activity = pd.read_excel(matched_activity_path, sheet_name=sheet)
@@ -852,7 +980,7 @@ def build_matsurica_csv(customers_path: Path, matched_activity_path: Path) -> pd
         '事前メモ', '実施結果', 'ステータス(必須)', 'アクションコンタクト(コンタクトID)'
     ]
 
-    out_df = build_output(activity, customers, template_cols)
+    out_df = build_output(activity, customers, template_cols, customer_lookup)
     return out_df
 
 # ========== メイン処理 ==========
@@ -871,6 +999,7 @@ def main(*args, **kwargs):
         print(f"入力ファイル: {args.input_excel}")
         print(f"顧客リスト: {args.customers}")
         print(f"出力ファイル: {args.output if args.output else 'customer_action_import_format.csv'}")
+        print(f"コードバージョン: {TOOL_VERSION}")
         
         # 1. Excel→CSV変換（明細データシートを指定）
         print("1. ExcelファイルをCSVに変換中...")
